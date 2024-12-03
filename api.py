@@ -335,7 +335,7 @@ def voice_conversion(
     vc_wave = torch.tensor(np.concatenate(generated_wave_chunks))[None, :].float()
     time_vc_end = time.time()
     logger.info(f"RTF: {(time_vc_end - time_vc_start) / vc_wave.size(-1) * sr}")
-    torchaudio.save(output_file, vc_wave.cpu(), sr)
+    torchaudio.save(output_file, vc_wave.cpu(), sr, format="wav")
 
 
 @app.post("/infer_vc")
