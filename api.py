@@ -379,6 +379,7 @@ async def infer_vc(
             )
             logger.info("vc done. cost time: %.03f", time.time() - time_start)
 
+            wav_io.seek(0)
             # if post_process:
             #     wav_io = do_post_process(wav_io)
             #     logger.info(
