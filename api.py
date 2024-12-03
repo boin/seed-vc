@@ -341,6 +341,7 @@ def voice_conversion(
 async def infer_vc(
     actor: str,
     voice: str,
+    steps: str = "50",
     post_process: bool = True,
     file: UploadFile = File(...),
 ):
@@ -353,7 +354,7 @@ async def infer_vc(
         )
 
     args = {
-        "diffusion_steps": 30,
+        "diffusion_steps": int(steps),
         "length_adjust": 1.0,
         "inference_cfg_rate": 0.7,
     }
