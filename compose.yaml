@@ -14,7 +14,7 @@ services:
     tty: true
     restart: unless-stopped
     ports:
-      - "7001:7866"
+      - "7001:7860"
     deploy:
       resources:
         reservations:
@@ -26,7 +26,7 @@ services:
     container_name: 'svc-p5000'
     extends: svc-3070
     ports: !override
-      - "7002:7866"
+      - "7002:7860"
     deploy: !override
       resources:
         reservations:
