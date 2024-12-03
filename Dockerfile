@@ -26,4 +26,4 @@ RUN pip install --no-cache-dir -r /requirements.txt
 # Copy the rest of the application
 COPY . /app
 
-CMD [ "python", "api.py" ]
+CMD [ "python", "app.py" ]

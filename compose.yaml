@@ -1,13 +1,13 @@
 services:
-  svc-api:
-    container_name: 'svc'
+  svc-3070:
+    container_name: 'svc-3070'
     build: .
     image: seed-vc:latest
     environment:
       - LC_ALL=C.UTF-8
     volumes:
-      - /data/ttd/:/data/ttd
-      - /data/ttd/seed-vc/.cache/:/root/.cache
+      - /TTD-Data/seed-vc/checkpoints:/app/checkpoints
+      - /TTD-Data/seed-vc/cache:/root/.cache
     working_dir: /app
     shm_size: 16G
     stdin_open: true
@@ -21,4 +21,16 @@ services:
           devices:
           - driver: nvidia
             device_ids: ["0"]
+            capabilities: [gpu]
+  svc-p5000:
+    container_name: 'svc-p5000'
+    extends: svc-3070
+    ports: !override
+      - "7002:7866"
+    deploy: !override
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            device_ids: ["1"]
             capabilities: [gpu]
