@@ -39,7 +39,7 @@ services:
     container_name: 'svc-api-3'
     extends: svc-api-1
     ports: !override
-      - "7001:7866"
+      - "7002:7866"
     deploy: !override
       resources:
         reservations:
