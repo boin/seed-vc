@@ -13,7 +13,7 @@ services:
     tty: true
     restart: unless-stopped
     ports:
-      - "7866:7866"
+      - "7001:7866"
     deploy:
       resources:
         reservations:
