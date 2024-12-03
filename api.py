@@ -7,7 +7,6 @@ import os
 import tempfile
 import time
 import warnings
-from collections import UserDict
 
 import librosa
 import numpy as np
@@ -336,7 +335,7 @@ def voice_conversion(
     time_vc_end = time.time()
     logger.info(f"RTF: {(time_vc_end - time_vc_start) / vc_wave.size(-1) * sr}")
     torchaudio.save(output_file, vc_wave.cpu(), sr, format="wav")
-
+    return True
 
 @app.post("/infer_vc")
 async def infer_vc(
@@ -370,7 +369,7 @@ async def infer_vc(
                 "recieved vc request. actor: %s, size: %d", actor, len(contents)
             )
             # 调用 vc 方法
-            result, wav_data = voice_conversion(
+            voice_conversion(
                 temp_file.name,
                 get_svc_voice(actor, voice),
                 wav_io,
