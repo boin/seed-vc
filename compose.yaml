@@ -1,0 +1,23 @@
+services:
+  svc-api:
+    container_name: 'svc'
+    build: .
+    image: seed-vc:latest
+    environment:
+      - LC_ALL=C.UTF-8
+    volumes:
+      - /data/ttd:/data/ttd
+    working_dir: /workspace
+    shm_size: 16G
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+    ports:
+      - "7861:7860"
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            device_ids: ["0"]
+            capabilities: [gpu]
