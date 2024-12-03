@@ -139,7 +139,7 @@ def crossfade(chunk1, chunk2, overlap):
 
 
 def get_svc_voice(actor, voice):
-    return os.path.join(VC_ROOT, actor, voice + ".wav")
+    return os.path.join(VC_ROOT, 'models', actor, voice + ".wav")
 
 
 @torch.no_grad()
