@@ -7,6 +7,7 @@ services:
       - LC_ALL=C.UTF-8
     volumes:
       - /data/ttd/:/data/ttd
+      - /data/ttd/seed-vc/.cache/:/root/.cache
     working_dir: /app
     shm_size: 16G
     stdin_open: true

@@ -33,8 +33,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 warnings.simplefilter("ignore")
-os.environ["HF_HUB_CACHE"] = "./checkpoints/hf_cache"
 VC_ROOT = "/data/ttd/seed-vc/"
+os.environ["HF_HUB_CACHE"] = os.path.join(VC_ROOT, "./checkpoints/hf_cache")
 
 # Load model and configuration
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
