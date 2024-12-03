@@ -139,7 +139,7 @@ def crossfade(chunk1, chunk2, overlap):
 
 
 def get_svc_voice(actor, voice):
-    return os.path.join(VC_ROOT, 'models', actor, voice + ".wav")
+    return os.path.join(VC_ROOT, "models", actor, voice + ".wav")
 
 
 @torch.no_grad()
@@ -353,13 +353,11 @@ async def infer_vc(
             status_code=400, detail="Invalid file type. Only audio files are accepted."
         )
 
-    args = UserDict(
-        {
-            "diffusion_steps": 30,
-            "length_adjust": 1.0,
-            "inference_cfg_rate": 0.7,
-        }
-    )
+    args = {
+        "diffusion_steps": 30,
+        "length_adjust": 1.0,
+        "inference_cfg_rate": 0.7,
+    }
 
     wav_io = io.BytesIO()
     # 创建临时文件
@@ -376,9 +374,9 @@ async def infer_vc(
                 temp_file.name,
                 get_svc_voice(actor, voice),
                 wav_io,
-                args.diffusion_steps,
-                args.length_adjust,
-                args.inference_cfg_rate,
+                args["diffusion_steps"],
+                args["length_adjust"],
+                args["inference_cfg_rate"],
             )
             logger.info("vc done. cost time: %.03f", time.time() - time_start)
 
