@@ -138,7 +138,7 @@ def crossfade(chunk1, chunk2, overlap):
 
 
 def get_svc_voice(actor, voice):
-    return os.path.join(VC_ROOT, "models", actor, voice + ".wav")
+    return os.path.join(VC_ROOT, "models", actor, "train", voice + ".wav")
 
 
 @torch.no_grad()
@@ -285,7 +285,6 @@ def voice_conversion(
     # split source condition (cond) into chunks
     processed_frames = 0
     generated_wave_chunks = []
-    # generate chunk by chunk and stream the output
     # generate chunk by chunk and stream the output
     while processed_frames < cond.size(1):
         chunk_cond = cond[:, processed_frames : processed_frames + max_source_window]
