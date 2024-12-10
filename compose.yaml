@@ -6,8 +6,18 @@ services:
     environment:
       - LC_ALL=C.UTF-8
     volumes:
-      - /TTD-Data/seed-vc/checkpoints:/app/checkpoints
-      - /TTD-Data/seed-vc/cache:/root/.cache
+      - type: volume
+        source: TTD-Data
+        target: /app/checkpoints
+        volume:
+          nocopy: true
+          subpath: seed-vc/checkpoints
+      - type: volume
+        source: TTD-Data
+        target: /root/.cache
+        volume:
+          nocopy: true
+          subpath: seed-vc/cache
     working_dir: /app
     shm_size: 16G
     stdin_open: true
@@ -19,9 +29,9 @@ services:
       resources:
         reservations:
           devices:
-          - driver: nvidia
-            device_ids: ["0"]
-            capabilities: [gpu]
+            - driver: nvidia
+              device_ids: [ "0" ]
+              capabilities: [ gpu ]
   svc-p5000:
     container_name: 'svc-p5000'
     extends: svc-3070
@@ -31,6 +41,10 @@ services:
       resources:
         reservations:
           devices:
-          - driver: nvidia
-            device_ids: ["1"]
-            capabilities: [gpu]
+            - driver: nvidia
+              device_ids: [ "1" ]
+              capabilities: [ gpu ]
+
+volumes:
+  TTD-Data:
+    external: true
