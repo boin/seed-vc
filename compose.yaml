@@ -15,7 +15,7 @@ services:
     tty: true
     restart: unless-stopped
     ports:
-      - "7000:7866"
+      - "7000:7856"
     deploy:
       resources:
         reservations:
@@ -27,7 +27,7 @@ services:
     container_name: 'svc-api-2'
     extends: svc-api-1
     ports: !override
-      - "7001:7866"
+      - "7001:7856"
     deploy: !override
       resources:
         reservations:
@@ -39,7 +39,7 @@ services:
     container_name: 'svc-api-3'
     extends: svc-api-1
     ports: !override
-      - "7002:7866"
+      - "7002:7856"
     deploy: !override
       resources:
         reservations:

@@ -25,7 +25,8 @@ from modules.bigvgan import bigvgan
 from modules.audio import mel_spectrogram
 
 from transformers import AutoFeatureExtractor, WhisperModel
-
+import pyloudnorm as pyln
+import soundfile as sf
 
 logging.basicConfig(level=logging.INFO)
 
@@ -143,7 +144,13 @@ def get_svc_voice(actor, voice):
 
 @torch.no_grad()
 def voice_conversion(
-    source, target, output_file, diffusion_steps, length_adjust, inference_cfg_rate
+    source,
+    target,
+    output_file,
+    diffusion_steps,
+    length_adjust,
+    inference_cfg_rate,
+    post_process=True,
 ):
     inference_module = model
     mel_fn = to_mel
@@ -333,8 +340,22 @@ def voice_conversion(
     vc_wave = torch.tensor(np.concatenate(generated_wave_chunks))[None, :].float()
     time_vc_end = time.time()
     logger.info(f"RTF: {(time_vc_end - time_vc_start) / vc_wave.size(-1) * sr}")
-    torchaudio.save(output_file, vc_wave.cpu(), sr, format="wav")
+    if not post_process:
+        torchaudio.save(output_file, vc_wave.cpu(), sr, format="wav")
+        return True
+    np_wave = vc_wave.detach().cpu().numpy()[0]
+    # peak normalize audio to -1 dB
+    np_wave = pyln.normalize.peak(np_wave, -1.0)
+    # measure the loudness first
+    meter = pyln.Meter(sr)  # create BS.1770 meter
+    loudness = meter.integrated_loudness(np_wave)
+    # loudness normalize audio to -23 dB LUFS
+    loudness_normalized_audio = pyln.normalize.loudness(np_wave, loudness, -23.0)
+    # save the audio
+    sf.write(output_file, loudness_normalized_audio, sr, format="wav")
+    # torchaudio.save(output_file, vc_wave.cpu(), sr, format="wav")
     return True
+
 
 @app.post("/infer_vc")
 async def infer_vc(
@@ -376,6 +397,7 @@ async def infer_vc(
                 args["diffusion_steps"],
                 args["length_adjust"],
                 args["inference_cfg_rate"],
+                post_process,
             )
             logger.info("vc done. cost time: %.03f", time.time() - time_start)
 
@@ -402,4 +424,4 @@ async def infer_vc(
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=7866)
+    uvicorn.run(app, host="0.0.0.0", port=7856)
