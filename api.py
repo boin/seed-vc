@@ -344,15 +344,15 @@ def voice_conversion(
         torchaudio.save(output_file, vc_wave.cpu(), sr, format="wav")
         return True
     np_wave = vc_wave.detach().cpu().numpy()[0]
-    # peak normalize audio to -1 dB
-    np_wave = pyln.normalize.peak(np_wave, -1.0)
     # measure the loudness first
     meter = pyln.Meter(sr)  # create BS.1770 meter
     loudness = meter.integrated_loudness(np_wave)
     # loudness normalize audio to -23 dB LUFS
-    loudness_normalized_audio = pyln.normalize.loudness(np_wave, loudness, -23.0)
+    np_wave = pyln.normalize.loudness(np_wave, loudness, -23.0)
+    # peak normalize audio to -1 dB
+    np_wave = pyln.normalize.peak(np_wave, -1.0)
     # save the audio
-    sf.write(output_file, loudness_normalized_audio, sr, format="wav")
+    sf.write(output_file, np_wave, sr, format="wav")
     # torchaudio.save(output_file, vc_wave.cpu(), sr, format="wav")
     return True
 
