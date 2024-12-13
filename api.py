@@ -10,23 +10,21 @@ import warnings
 
 import librosa
 import numpy as np
+import soundfile as sf
 import torch
 import torchaudio
 import uvicorn
 import yaml
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
+from transformers import AutoFeatureExtractor, WhisperModel
 
 from hf_utils import load_custom_model_from_hf
-from modules.commons import build_model, load_checkpoint, recursive_munch
-
-from modules.campplus.DTDNN import CAMPPlus
-from modules.bigvgan import bigvgan
 from modules.audio import mel_spectrogram
-
-from transformers import AutoFeatureExtractor, WhisperModel
-import pyloudnorm as pyln
-import soundfile as sf
+from modules.bigvgan import bigvgan
+from modules.campplus.DTDNN import CAMPPlus
+from modules.commons import build_model, load_checkpoint, recursive_munch
+from modules.postprocess import loudnorm, eq
 
 logging.basicConfig(level=logging.INFO)
 
@@ -344,14 +342,9 @@ def voice_conversion(
         torchaudio.save(output_file, vc_wave.cpu(), sr, format="wav")
         return True
     np_wave = vc_wave.detach().cpu().numpy()[0]
-    # measure the loudness first
-    meter = pyln.Meter(sr)  # create BS.1770 meter
-    loudness = meter.integrated_loudness(np_wave)
-    # loudness normalize audio to -23 dB LUFS
-    np_wave = pyln.normalize.loudness(np_wave, loudness, -23.0)
-    # save the audio
+    np_wave = eq(np_wave, sr)
+    np_wave = loudnorm(np_wave, sr)
     sf.write(output_file, np_wave, sr, format="wav")
-    # torchaudio.save(output_file, vc_wave.cpu(), sr, format="wav")
     return True
 
 
