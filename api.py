@@ -341,9 +341,10 @@ def voice_conversion(
     if not post_process:
         torchaudio.save(output_file, vc_wave.cpu(), sr, format="wav")
         return True
-    np_wave = vc_wave.detach().cpu().numpy()[0]
+    np_wave = vc_wave.cpu().numpy().flatten()
     np_wave = eq(np_wave, sr)
-    np_wave = loudnorm(np_wave, sr)
+    np_wave, ori_loudness = loudnorm(np_wave, sr)
+    logger.info(f"Original loudness: {ori_loudness:.2f} LUFS. normalized to -23 LUFS")
     sf.write(output_file, np_wave, sr, format="wav")
     return True
 

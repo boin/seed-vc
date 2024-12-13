@@ -8,7 +8,7 @@ def loudnorm(wav_data, sr):
     meter = pyln.Meter(sr)  # create BS.1770 meter
     loudness = meter.integrated_loudness(wav_data)
     # loudness normalize audio to -23 dB LUFS
-    return pyln.normalize.loudness(wav_data, loudness, -23.0)
+    return pyln.normalize.loudness(wav_data, loudness, -23.0), loudness
 
 
 def eq(wav_data, sr):
@@ -33,7 +33,7 @@ def eq(wav_data, sr):
     # 确保音频数据是float64格式
     audio = wav_data.astype(np.float64)
 
-    # 增强频段5000Hz-20000Hz
+    # 增强频段5000Hz-10000Hz
     enhanced_audio = enhance_frequency_band(audio, sr, low_freq, high_freq, gain_factor)
 
     # 输出为float64格式
