@@ -340,6 +340,7 @@ def voice_conversion(
     logger.info(f"RTF: {(time_vc_end - time_vc_start) / vc_wave.size(-1) * sr}")
     if not post_process:
         torchaudio.save(output_file, vc_wave.cpu(), sr, format="wav")
+        logger.warning("Post-process is disabled.")
         return True
     np_wave = vc_wave.cpu().numpy().flatten()
     np_wave = eq(np_wave, sr)
