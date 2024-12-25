@@ -137,7 +137,10 @@ def crossfade(chunk1, chunk2, overlap):
 
 
 def get_svc_voice(actor, voice):
-    return os.path.join(VC_ROOT, "models", actor, "train", voice + ".wav")
+    vc_ref_file = os.path.join(VC_ROOT, "models", actor, "train", voice + ".wav")
+    if not os.path.exists(vc_ref_file):
+        raise FileNotFoundError(f"Voice file not found: {vc_ref_file}")
+    return vc_ref_file
 
 
 @torch.no_grad()
@@ -400,7 +403,9 @@ async def infer_vc(
             #     logger.info(
             #         "post process done. cost time: %.03f", time.time() - time_start
             #     )
-
+    except FileNotFoundError as e:
+        logger.exception("svc task failed: ")
+        raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         logger.exception("svc task failed: ")
         raise HTTPException(status_code=500, detail=str(e))
