@@ -8,6 +8,7 @@ import tempfile
 import time
 import warnings
 
+from fastapi.params import Form
 import librosa
 import numpy as np
 import soundfile as sf
@@ -420,6 +421,45 @@ async def infer_vc(
         headers={"Content-Disposition": "attachment; filename=output.wav"},
     )
 
+@app.post("/svc_file")
+async def svc_file(
+    src_file: UploadFile = File(...),
+    ref_file: UploadFile = File(...),
+    steps: str = Form("50"),
+):
+    wav_io = io.BytesIO()
+    temp_dir = tempfile.mkdtemp()
+
+    temp_file_path = os.path.join(temp_dir, src_file.filename)
+    with open(temp_file_path, "wb") as temp_file_src:
+        contents = await src_file.read()
+        temp_file_src.write(contents)
+        temp_file_src.flush()  # 确保数据写入文件
+        
+    temp_file_path = os.path.join(temp_dir, ref_file.filename)
+    with open(temp_file_path, "wb") as temp_file_ref:
+        contents = await ref_file.read()
+        temp_file_ref.write(contents)
+        temp_file_ref.flush()  # 确保数据写入文件
+
+    try: 
+        # 处理上传的文件
+        voice_conversion(
+            temp_file_src.name,
+            temp_file_ref.name,
+            wav_io,
+            diffusion_steps=int(steps),
+            length_adjust=1.0,
+            inference_cfg_rate=0.7,
+        )
+        wav_io.seek(0)
+        return StreamingResponse(
+            wav_io,
+            media_type="audio/wav",
+            headers={"Content-Disposition": "attachment; filename=output.wav"},
+        )
+    finally:
+        shutil.rmtree(temp_dir)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=7856)
