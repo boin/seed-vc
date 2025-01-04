@@ -7,6 +7,7 @@ import os
 import tempfile
 import time
 import warnings
+import shutil
 
 from fastapi.params import Form
 import librosa
@@ -435,7 +436,7 @@ async def svc_file(
         contents = await src_file.read()
         temp_file_src.write(contents)
         temp_file_src.flush()  # 确保数据写入文件
-        
+
     temp_file_path = os.path.join(temp_dir, ref_file.filename)
     with open(temp_file_path, "wb") as temp_file_ref:
         contents = await ref_file.read()
