@@ -3,15 +3,15 @@ import pyloudnorm as pyln
 import scipy.signal as signal
 
 
-def loudnorm(wav_data, sr):
+def loudnorm(wav_data: np.ndarray, sr: int):
     # measure the loudness first
     meter = pyln.Meter(sr)  # create BS.1770 meter
-    loudness = meter.integrated_loudness(wav_data)
+    loudness: float = meter.integrated_loudness(wav_data)
     # loudness normalize audio to -23 dB LUFS
     return pyln.normalize.loudness(wav_data, loudness, -23.0), loudness
 
 
-def eq(wav_data, sr):
+def eq(wav_data: np.ndarray, sr: int):
     def enhance_frequency_band(audio, sample_rate, low_freq, high_freq, gain_factor):
         # 设计带通滤波器
         nyquist = 0.5 * sample_rate  # 奈奎斯特频率

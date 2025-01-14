@@ -348,9 +348,12 @@ def voice_conversion(
         logger.warning("Post-process is disabled.")
         return True
     np_wave = vc_wave.cpu().numpy().flatten()
-    np_wave = eq(np_wave, sr)
-    np_wave, ori_loudness = loudnorm(np_wave, sr)
-    logger.info(f"Original loudness: {ori_loudness:.2f} LUFS. normalized to -23 LUFS")
+    try:
+        np_wave = eq(np_wave, sr)
+        np_wave, ori_loudness = loudnorm(np_wave, sr)
+        logger.info(f"Original loudness: {ori_loudness:.2f} LUFS. normalized to -23 LUFS")
+    except Exception as e:
+        logger.warning(f"Post-processing failed with error: {e}")
     sf.write(output_file, np_wave, sr, format="wav")
     return True
 
