@@ -3,15 +3,50 @@ import pyloudnorm as pyln
 import scipy.signal as signal
 
 
-def loudnorm(wav_data: np.ndarray, sr: int):
+def loudnorm(wav_data: np.ndarray, sr: int, target_loudness: float = -23, threshold: float = 0.99) -> tuple[np.ndarray, float]:
+    """
+    Loudness normalization (LUFS). return limited peak audio and original loudness
+
+    Parameters
+    ----------
+    wav_data : np.ndarray
+        Input audio data. (float)
+    sr : int
+        Sampling rate. (int)
+    target_loudness : float
+        Target loudness. (float) default: -23
+    threshold : float
+        Threshold for loudness reduction. (float) default: 0.99
+    
+    Returns
+    -------
+    limited_audio : np.ndarray
+        Limited peak audio. (float)
+    original_loudness : float
+        Original loudness. (float)
+    """
     # measure the loudness first
     meter = pyln.Meter(sr)  # create BS.1770 meter
-    loudness: float = meter.integrated_loudness(wav_data)
-    # loudness normalize audio to -23 dB LUFS
-    return pyln.normalize.loudness(wav_data, loudness, -23.0), loudness
+    original_loudness: float = meter.integrated_loudness(wav_data)
+    # loudness normalize audio to target_loudness dB LUFS
+    wav_data = pyln.normalize.loudness(wav_data, original_loudness, target_loudness)
+    # Calculate the gain reduction factor
+    reduction_factor = np.where(np.abs(wav_data) > threshold, threshold / np.abs(wav_data), 1.0)
+    # Apply the gain reduction to the audio signal
+    limited_audio = wav_data * reduction_factor
+    return limited_audio, original_loudness
 
+def eq(wav_data: np.ndarray, sr: int) -> np.ndarray:
+    """
+    Equalization (Frequency Shift).
 
-def eq(wav_data: np.ndarray, sr: int):
+    Parameters
+    ----------
+    wav_data : np.ndarray
+        Input audio data. (float)
+    sr : int
+        Sampling rate.
+    """
     def enhance_frequency_band(audio, sample_rate, low_freq, high_freq, gain_factor):
         # 设计带通滤波器
         nyquist = 0.5 * sample_rate  # 奈奎斯特频率

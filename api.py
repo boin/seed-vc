@@ -349,9 +349,10 @@ def voice_conversion(
         return True
     np_wave = vc_wave.cpu().numpy().flatten()
     try:
+        target_loudness = -23.0  # 设置目标 LUFS 声度
         np_wave = eq(np_wave, sr)
-        np_wave, ori_loudness = loudnorm(np_wave, sr)
-        logger.info(f"Original loudness: {ori_loudness:.2f} LUFS. normalized to -23 LUFS")
+        np_wave, ori_loudness = loudnorm(np_wave, sr, target_loudness)
+        logger.info(f"Original loudness: {ori_loudness:.2f} LUFS. normalized to {target_loudness:.2f} LUFS")
     except Exception as e:
         logger.warning(f"Post-processing failed with error: {e}")
     sf.write(output_file, np_wave, sr, format="wav")
