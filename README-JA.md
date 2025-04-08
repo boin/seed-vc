@@ -91,7 +91,7 @@ python app.py
 
 リアルタイム音声変換GUI：
 ```bash
-python real-time-gui.py --checkpoint <path-to-checkpoint> --config <path-to-config>
+python real-time-gui.py --checkpoint-path <path-to-checkpoint> --config-path <path-to-config>
 ```
 - `checkpoint` は独自のモデルをトレーニングまたはファインチューニングした場合のモデルチェックポイントへのパス、空白の場合はhuggingfaceからデフォルトモデルを自動ダウンロード（`seed-uvit-tat-xlsr-tiny`）
 - `config` は独自のモデルをトレーニングまたはファインチューニングした場合のモデル設定へのパス、空白の場合はhuggingfaceからデフォルト設定を自動ダウンロード
@@ -105,6 +105,17 @@ NVIDIA RTX 3060ノートパソコンGPUでいくつかのパフォーマンス�
 
 GUIでパラメータを自身のデバイスのパフォーマンスに合わせて調整できます。推論時間がブロック時間より短ければ、音声変換ストリームは正常に動作するはずです。
 他のGPU集約型タスク（ゲーム、動画視聴など）を実行している場合、推論速度が低下する可能性があることに注意してください。
+
+リアルタイム音声変換GUIのパラメータ説明：
+- `Diffusion Steps` は拡散ステップ数、リアルタイム変換の場合は通常4~10で最速推論
+- `Inference CFG Rate` は出力に微妙な違いをもたらす、デフォルトは0.7、0.0に設定すると1.5倍の推論速度が向上
+- `Max Prompt Length` は最大プロンプト長、設定を低くすると推論速度が速くなるが、提示音声との類似性が低下する可能性がある
+- `Block Time` は推論の各オーディオ チャンクの時間長です。値が大きいほどレイテンシが長くなります。この値はブロックあたりの推論時間よりも長くする必要があることに注意してください。ハードウェアの状態に応じて設定します。
+- `Crossfade Length` はクロスフェード長、通常は変更しない
+- `Extra context (left)` は推論のための追加履歴コンテキストの時間長です。値が高いほど推論時間は長くなりますが、安定性は向上します。
+- `Extra context (right)` は推論のための追加未来コンテキストの時間長です。値が高いほど推論時間とレイテンシは長くなりますが、安定性は向上します。
+
+アルゴリズムレイテンシーは`Block Time * 2 + Extra context (right)`で、デバイス側レイテンシーは通常100ms程度です。全体の遅延は 2 つの合計です。
 
 [VB-CABLE](https://vb-audio.com/Cable/)を使用して、GUI出力ストリームを仮想マイクにルーティングすることができます。
 
@@ -179,6 +190,7 @@ python train.py
 - [ ] より良い歌声変換のためのNSFボコーダ
 - [x] 非発話時のリアルタイム音声変換アーティファクトの修正（VADモデルの追加により対応）
 - [x] ファインチューニング例のColabノートブック
+- [ ] Whisperをより高度な意味抽出器に置き換える
 - [ ] 今後追加予定
 
 ## 更新履歴🗒️
@@ -208,3 +220,8 @@ python train.py
     - 同じ品質を達成するためのサイズ縮小と拡散ステップ数の削減、およびプロソディ保持の制御能力を追加したv0.2事前学習済みモデルを更新
     - コマンドライン推論スクリプトを追加
     - インストールと使用方法の説明を追加
+
+## 謝辞🙏
+- [Amphion](https://github.com/open-mmlab/Amphion) for providing computational resources and inspiration!
+- [RVC](https://github.com/RVC-Project/Retrieval-based-Voice-Conversion-WebUI) for foundationing the real-time voice conversion
+- [SEED-TTS](https://arxiv.org/abs/2406.02430) for the initial idea

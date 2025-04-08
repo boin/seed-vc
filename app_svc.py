@@ -20,14 +20,14 @@ def load_models(args):
     print(f"Using device: {device}")
     print(f"Using fp16: {fp16}")
     # f0 conditioned model
-    if args.checkpoint_path is None or args.checkpoint_path == "":
+    if args.checkpoint is None or args.checkpoint == "":
         dit_checkpoint_path, dit_config_path = load_custom_model_from_hf("Plachta/Seed-VC",
                                                                          "DiT_seed_v2_uvit_whisper_base_f0_44k_bigvgan_pruned_ft_ema_v2.pth",
                                                                          "config_dit_mel_seed_uvit_whisper_base_f0_44k.yml")
     else:
-        print(f"Using custom checkpoint: {args.checkpoint_path}")
-        dit_checkpoint_path = args.checkpoint_path
-        dit_config_path = args.config_path
+        print(f"Using custom checkpoint: {args.checkpoint}")
+        dit_checkpoint_path = args.checkpoint
+        dit_config_path = args.config
     config = yaml.safe_load(open(dit_config_path, "r"))
     model_params = recursive_munch(config["model_params"])
     model_params.dit_type = 'DiT'
@@ -294,8 +294,12 @@ def voice_conversion(source, target, diffusion_steps, length_adjust, inference_c
     F0_ori = f0_fn(ref_waves_16k[0], thred=0.03)
     F0_alt = f0_fn(converted_waves_16k[0], thred=0.03)
 
-    F0_ori = torch.from_numpy(F0_ori).to(device)[None]
-    F0_alt = torch.from_numpy(F0_alt).to(device)[None]
+    if device.type == "mps":
+        F0_ori = torch.from_numpy(F0_ori).float().to(device)[None]
+        F0_alt = torch.from_numpy(F0_alt).float().to(device)[None]
+    else:
+        F0_ori = torch.from_numpy(F0_ori).to(device)[None]
+        F0_alt = torch.from_numpy(F0_alt).to(device)[None]
 
     voiced_F0_ori = F0_ori[F0_ori > 1]
     voiced_F0_alt = F0_alt[F0_alt > 1]
@@ -429,12 +433,18 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--checkpoint-path", type=str, help="Path to the checkpoint file", default=None)
-    parser.add_argument("--config-path", type=str, help="Path to the config file", default=None)
+    parser.add_argument("--checkpoint", type=str, help="Path to the checkpoint file", default=None)
+    parser.add_argument("--config", type=str, help="Path to the config file", default=None)
     parser.add_argument("--share", type=str2bool, nargs="?", const=True, default=False, help="Whether to share the app")
     parser.add_argument("--fp16", type=str2bool, nargs="?", const=True, help="Whether to use fp16", default=True)
     parser.add_argument("--gpu", type=int, help="Which GPU id to use", default=0)
     args = parser.parse_args()
     cuda_target = f"cuda:{args.gpu}" if args.gpu else "cuda" 
-    device = torch.device(cuda_target if torch.cuda.is_available() else "cpu")
+
+    if torch.cuda.is_available():
+        device = torch.device(cuda_target)
+    elif torch.backends.mps.is_available():
+        device = torch.device("mps")
+    else:
+        device = torch.device("cpu")
     main(args)

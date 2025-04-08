@@ -18,9 +18,15 @@ We are keeping on improving the model quality and adding more features.
 ## Evaluation📊
 See [EVAL.md](EVAL.md) for objective evaluation results and comparisons with other baselines.
 ## Installation📥
-Suggested python 3.10 on Windows or Linux.
+Suggested python 3.10 on Windows, Mac M Series (Apple Silicon) or Linux.
+Windows and Linux:
 ```bash
 pip install -r requirements.txt
+```
+
+Mac M Series:
+```bash
+pip install -r requirements-mac.txt
 ```
 
 ## Usage🛠️
@@ -88,13 +94,14 @@ This will only load pretrained models for zero-shot inference. To use custom che
 
 Real-time voice conversion GUI:
 ```bash
-python real-time-gui.py --checkpoint <path-to-checkpoint> --config <path-to-config>
+python real-time-gui.py --checkpoint-path <path-to-checkpoint> --config-path <path-to-config>
 ```
 - `checkpoint` is the path to the model checkpoint if you have trained or fine-tuned your own model, leave to blank to auto-download default model from huggingface. (`seed-uvit-tat-xlsr-tiny`)
 - `config` is the path to the model config if you have trained or fine-tuned your own model, leave to blank to auto-download default config from huggingface  
 
-IMPORTANT: It is strongly recommended to use a GPU for real-time voice conversion.  
-Some performance testing has been done on a NVIDIA RTX 3060 Laptop GPU, results and recommended parameter settings are listed below:
+> [!IMPORTANT]
+> It is strongly recommended to use a GPU for real-time voice conversion.
+> Some performance testing has been done on a NVIDIA RTX 3060 Laptop GPU, results and recommended parameter settings are listed below:
 
 | Model Configuration             | Diffusion Steps | Inference CFG Rate | Max Prompt Length | Block Time (s) | Crossfade Length (s) | Extra context (left) (s) | Extra context (right) (s) | Latency (ms) | Inference Time per Chunk (ms) |
 |---------------------------------|-----------------|--------------------|-------------------|----------------|----------------------|--------------------------|---------------------------|--------------|-------------------------------| 
@@ -102,6 +109,17 @@ Some performance testing has been done on a NVIDIA RTX 3060 Laptop GPU, results 
 
 You can adjust the parameters in the GUI according to your own device performance, the voice conversion stream should work well as long as Inference Time is less than Block Time.  
 Note that inference speed may drop if you are running other GPU intensive tasks (e.g. gaming, watching videos)  
+
+Explanations for real-time voice conversion GUI parameters:
+- `Diffusion Steps` is the number of diffusion steps to use, in real-time case usually set to 4~10 for fastest inference;
+- `Inference CFG Rate` has subtle difference in the output, default is 0.7, set to 0.0 gains about 1.5x speed-up;
+- `Max Prompt Length` is the maximum length of the prompt audio, setting to a low value can speed up inference, but may reduce similarity to prompt speech;
+- `Block Time` is the time length of each audio chunk for inference, the higher the value, the higher the latency, note this value must be greater than the inference time per block, set according to your hardware condition;
+- `Crossfade Length` is the time length of crossfade between audio chunks, normally not needed to change;
+- `Extra context (left)` is the time length of extra history context for inference, the higher the value, the higher the inference time, but can increase stability;
+- `Extra context (right)` is the time length of extra future context for inference, the higher the value, the higher the inference time and latency, but can increase stability;
+
+The algorithm delay is appoximately calculated as `Block Time * 2 + Extra context (right)`, device side delay is usually of ~100ms. The overall delay is the sum of the two.
 
 You may wish to use [VB-CABLE](https://vb-audio.com/Cable/) to route audio from GUI output stream to a virtual microphone.  
 
@@ -173,9 +191,17 @@ where:
 - [ ] NSF vocoder for better singing voice conversion
 - [x] Fix real-time voice conversion artifact while not talking (done by adding a VAD model)
 - [x] Colab Notebook for fine-tuning example
+- [ ] Replace whisper with more advanced linguistic content extractor
 - [ ] More to be added
+- [x] Add Apple Silicon support
+
+## Known Issues
+- On Mac - running `real-time-gui.py` might raise an error `ModuleNotFoundError: No module named '_tkinter'`, in this case a new Python version **with Tkinter support** should be installed. Refer to [This Guide on stack overflow](https://stackoverflow.com/questions/76105218/why-does-tkinter-or-turtle-seem-to-be-missing-or-broken-shouldnt-it-be-part) for explanation of the problem and a detailed fix.
+
 
 ## CHANGELOGS🗒️
+- 2025-03-03:
+    - Added Mac M Series (Apple Silicon) support
 - 2024-11-26:
     - Updated v1.0 tiny version pretrained model, optimized for real-time voice conversion
     - Support one-shot/few-shot single/multi speaker fine-tuning
@@ -202,3 +228,8 @@ where:
     - Updated v0.2 pretrained model, with smaller size and less diffusion steps to achieve same quality, and additional ability to control prosody preservation
     - Added command line inference script
     - Added installation and usage instructions
+
+## Acknowledgements🙏
+- [Amphion](https://github.com/open-mmlab/Amphion) for providing computational resources and inspiration!
+- [RVC](https://github.com/RVC-Project/Retrieval-based-Voice-Conversion-WebUI) for foundationing the real-time voice conversion
+- [SEED-TTS](https://arxiv.org/abs/2406.02430) for the initial idea

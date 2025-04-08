@@ -25,24 +25,35 @@ from hf_utils import load_custom_model_from_hf
 
 
 # Load model and configuration
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+if torch.cuda.is_available():
+    device = torch.device("cuda")
+elif torch.backends.mps.is_available():
+    device = torch.device("mps")
+else:
+    device = torch.device("cpu")
+
 fp16 = False
 def load_models(args):
     global fp16
     fp16 = args.fp16
     if not args.f0_condition:
-        dit_checkpoint_path, dit_config_path = load_custom_model_from_hf("Plachta/Seed-VC",
-                                                                         "DiT_seed_v2_uvit_whisper_small_wavenet_bigvgan_pruned.pth",
-                                                                         "config_dit_mel_seed_uvit_whisper_small_wavenet.yml")
+        if args.checkpoint is None:
+            dit_checkpoint_path, dit_config_path = load_custom_model_from_hf("Plachta/Seed-VC",
+                                                                            "DiT_seed_v2_uvit_whisper_small_wavenet_bigvgan_pruned.pth",
+                                                                            "config_dit_mel_seed_uvit_whisper_small_wavenet.yml")
+        else:
+            dit_checkpoint_path = args.checkpoint
+            dit_config_path = args.config
         f0_fn = None
     else:
-        if args.checkpoint_path is None:
+        if args.checkpoint is None:
             dit_checkpoint_path, dit_config_path = load_custom_model_from_hf("Plachta/Seed-VC",
                                                                              "DiT_seed_v2_uvit_whisper_base_f0_44k_bigvgan_pruned_ft_ema_v2.pth",
                                                                              "config_dit_mel_seed_uvit_whisper_base_f0_44k.yml")
         else:
-            dit_checkpoint_path = args.checkpoint_path
-            dit_config_path = args.config_path
+            dit_checkpoint_path = args.checkpoint
+            dit_config_path = args.config
         # f0 extractor
         from modules.rmvpe import RMVPE
 
@@ -407,8 +418,8 @@ if __name__ == "__main__":
     parser.add_argument("--f0-condition", type=str2bool, default=False)
     parser.add_argument("--auto-f0-adjust", type=str2bool, default=False)
     parser.add_argument("--semi-tone-shift", type=int, default=0)
-    parser.add_argument("--checkpoint-path", type=str, help="Path to the checkpoint file", default=None)
-    parser.add_argument("--config-path", type=str, help="Path to the config file", default=None)
+    parser.add_argument("--checkpoint", type=str, help="Path to the checkpoint file", default=None)
+    parser.add_argument("--config", type=str, help="Path to the config file", default=None)
     parser.add_argument("--fp16", type=str2bool, default=True)
     args = parser.parse_args()
     main(args)

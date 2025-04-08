@@ -1,7 +1,7 @@
 --extra-index-url https://download.pytorch.org/whl/cu121
-torch==2.4.0
-torchvision==0.19.0
-torchaudio==2.4.0
+torch --pre --extra-index-url https://download.pytorch.org/whl/nightly/cpu
+torchvision --pre --extra-index-url https://download.pytorch.org/whl/nightly/cpu
+torchaudio --pre --extra-index-url https://download.pytorch.org/whl/nightly/cpu
 scipy==1.13.1
 librosa==0.10.2
 huggingface-hub==0.23.4
