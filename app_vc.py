@@ -19,13 +19,13 @@ def load_models(args):
     fp16 = args.fp16
     print(f"Using device: {device}")
     print(f"Using fp16: {fp16}")
-    if args.checkpoint_path is None or args.checkpoint_path == "":
+    if args.checkpoint is None or args.checkpoint == "":
         dit_checkpoint_path, dit_config_path = load_custom_model_from_hf("Plachta/Seed-VC",
                                                                          "DiT_seed_v2_uvit_whisper_small_wavenet_bigvgan_pruned.pth",
                                                                          "config_dit_mel_seed_uvit_whisper_small_wavenet.yml")
     else:
-        dit_checkpoint_path = args.checkpoint_path
-        dit_config_path = args.config_path
+        dit_checkpoint_path = args.checkpoint
+        dit_config_path = args.config
     config = yaml.safe_load(open(dit_config_path, "r"))
     model_params = recursive_munch(config["model_params"])
     model_params.dit_type = 'DiT'
@@ -382,12 +382,18 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--checkpoint-path", type=str, help="Path to the checkpoint file", default=None)
-    parser.add_argument("--config-path", type=str, help="Path to the config file", default=None)
+    parser.add_argument("--checkpoint", type=str, help="Path to the checkpoint file", default=None)
+    parser.add_argument("--config", type=str, help="Path to the config file", default=None)
     parser.add_argument("--share", type=str2bool, nargs="?", const=True, default=False, help="Whether to share the app")
     parser.add_argument("--fp16", type=str2bool, nargs="?", const=True, help="Whether to use fp16", default=True)
     parser.add_argument("--gpu", type=int, help="Which GPU id to use", default=0)
     args = parser.parse_args()
     cuda_target = f"cuda:{args.gpu}" if args.gpu else "cuda" 
-    device = torch.device(cuda_target if torch.cuda.is_available() else "cpu")
+
+    if torch.cuda.is_available():
+        device = torch.device(cuda_target)
+    elif torch.backends.mps.is_available():
+        device = torch.device("mps")
+    else:
+        device = torch.device("cpu")
     main(args)
