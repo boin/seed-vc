@@ -24,4 +24,4 @@ RUN --mount=type=bind,source=requirements.txt,target=/tmp/requirements.txt \
 # Copy the rest of the application
 COPY . /app
 
-CMD [ "python", "api.py" ]
+CMD [ "python", "api2.py" ]
