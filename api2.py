@@ -111,12 +111,12 @@ async def infer_vc(
 async def svc_file(
     src_file: UploadFile = File(...),
     ref_file: UploadFile = File(...),
-    steps: str = Form("50"),
-    length_adjust: str = Form("1.0"),
-    inference_cfg_rate: str = Form("0.7"),
-    f0_conditioned: bool = Form(False),
-    auto_f0_adjust: bool = Form(False),
-    pitch_shift: str = Form("0"),
+    steps: str = "50",
+    length_adjust: str = "1.0",
+    inference_cfg_rate: str = "0.7",
+    f0_conditioned: bool = False,
+    auto_f0_adjust: bool = False,
+    pitch_shift: str = "0",
 ):
     temp_dir = tempfile.mkdtemp()
 
