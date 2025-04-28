@@ -7,9 +7,7 @@ import os
 import tempfile
 import time
 import warnings
-import shutil
 
-from fastapi.params import Form
 import soundfile as sf
 import uvicorn
 from fastapi import File, HTTPException, UploadFile, FastAPI
@@ -118,12 +116,12 @@ async def svc_file(
     auto_f0_adjust: bool = False,
     pitch_shift: str = "0",
 ):
-    with tempfile.NamedTemporaryFile(delete=True, suffix=".wav") as temp_file_src:
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_file_src:
         contents = await src_file.read()
         temp_file_src.write(contents)
         temp_file_src.flush()  # 确保数据写入文件
 
-    with tempfile.NamedTemporaryFile(delete=True, suffix=".wav") as temp_file_ref:
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_file_ref:
         contents = await ref_file.read()
         temp_file_ref.write(contents)
         temp_file_ref.flush()  # 确保数据写入文件
@@ -151,10 +149,14 @@ async def svc_file(
             media_type="audio/wav",
             headers={"Content-Disposition": "attachment; filename=output.wav"},
         )
-        
+
     except Exception as e:
         logger.exception("svc task failed: ")
         raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        os.remove(temp_file_src.name)
+        os.remove(temp_file_ref.name)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=7856)
