@@ -247,7 +247,7 @@ def main(args):
                 interface.render()
 
     # Launch the combined interface
-    demo.launch()
+    demo.launch(server_name="0.0.0.0")
 
 
 if __name__ == "__main__":

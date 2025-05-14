@@ -1,0 +1,68 @@
+services:
+  svc-api-1:
+    container_name: 'svc-api-1'
+    build: .
+    image: svc-api:latest
+    environment:
+      - LC_ALL=C.UTF-8
+      - TZ=Asia/Shanghai
+    volumes:
+      - type: volume # vc_data_root
+        source: TTD-Data
+        target: /data/ttd/seed-vc
+        volume:
+          nocopy: true
+          subpath: seed-vc
+      - type: volume # # for hs model
+        source: TTD-Data
+        target: /app/checkpoints
+        volume:
+          nocopy: true
+          subpath: seed-vc/checkpoints
+      - type: volume # # for .cache
+        source: TTD-Data
+        target: /root/.cache
+        volume:
+          nocopy: true
+          subpath: seed-vc/cache
+    working_dir: /app
+    shm_size: 16G
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+    ports:
+      - "7000:7856"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: [ "0" ]
+              capabilities: [ gpu ]
+  svc-api-2:
+    container_name: 'svc-api-2'
+    extends: svc-api-1
+    ports: !override
+      - "7001:7856"
+    deploy: !override
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: [ "1" ]
+              capabilities: [ gpu ]
+  svc-api-3:
+    container_name: 'svc-api-3'
+    extends: svc-api-1
+    ports: !override
+      - "7002:7856"
+    deploy: !override
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: [ "2" ]
+              capabilities: [ gpu ]
+volumes:
+  TTD-Data:
+    external: true
