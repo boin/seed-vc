@@ -22,7 +22,8 @@ warnings.simplefilter("ignore")
 VC_ROOT = "/data/ttd/seed-vc/"
 os.environ["HF_HUB_CACHE"] = os.path.join(VC_ROOT, "./checkpoints/hf_cache")
 
-from app import voice_conversion
+from seed_vc_wrapper import SeedVCWrapper
+vc_wrapper = SeedVCWrapper()
 
 def post_process_file(vc_wave, sr: int):
     output_file = io.BytesIO()
@@ -71,7 +72,7 @@ async def infer_vc(
                 "recieved vc request. actor: %s, size: %d", actor, len(contents)
             )
             # 调用 vc 方法
-            vc_generator = voice_conversion(
+            vc_generator = vc_wrapper.convert_voice(
                 temp_file.name,
                 get_svc_voice(actor, voice),
                 int(steps),
